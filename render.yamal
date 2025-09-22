@@ -1,0 +1,12 @@
+services:
+  - type: worker
+    name: chatroom-bot
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      apt-get update && apt-get install -y wget
+      wget -q https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
+      apt-get install -y ./google-chrome-stable_114.0.5735.90-1_amd64.deb
+    startCommand: python chatbot.py
+    autoDeploy: yes
