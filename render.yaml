@@ -1,33 +1,23 @@
 services:
   - type: web
-    name: chatroom-bot-liveview
+    name: final-chatbot-direct-upload
     env: python
     buildCommand: |
       pip install -r requirements.txt
-      # Installiert alle notwendigen Programme: X-Server, VNC-Server, einen Window Manager und curl/wget
-      apt-get update && apt-get install -y xvfb x11vnc fluxbox curl wget
-      # Lade ngrok herunter und mache es ausführbar
+      apt-get update && apt-get install -y xvfb x11vnc fluxbox curl wget unzip
       wget -q https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip -O ngrok.zip
       unzip ngrok.zip
       chmod +x ./ngrok
-      # Installiert Google Chrome & den passenden ChromeDriver (wie zuvor)
       wget -q https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
       apt-get install -y ./google-chrome-stable_114.0.5735.90-1_amd64.deb
       wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
       unzip chromedriver_linux64.zip
       mv chromedriver /usr/bin/chromedriver
       chmod +x /usr/bin/chromedriver
-    # Der StartCommand ist jetzt ein Skript, das alles in der richtigen Reihenfolge startet
     startCommand: |
-      # Starte ngrok im Hintergrund, um einen Tunnel zum VNC-Port 5900 zu erstellen
       ./ngrok tcp 5900 --log=stdout &
-      # Warte 5 Sekunden, damit ngrok eine URL generieren kann
       sleep 5
-      # Hole die öffentliche URL von ngrok und gib sie in den Logs aus - DAS IST DEINE ZUGANGSADRESSE
       curl -s http://localhost:4040/api/tunnels | grep -o "tcp://[0-9.]*.tcp.ngrok.io:[0-9]*"
-      # Starte den virtuellen Bildschirm im Hintergrund auf Display :1
       Xvfb :1 -screen 0 1280x800x16 &
-      # Starte den VNC-Server im Hintergrund und verbinde ihn mit dem virtuellen Bildschirm
       x11vnc -display :1 -nopw -forever &
-      # Starte unseren Python Bot. WICHTIG: Er muss wissen, welchen Bildschirm er nutzen soll
       python chatbot.py
