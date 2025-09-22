@@ -1,11 +1,21 @@
 services:
-  - type: web # WICHTIG: Geändert von "worker" zu "web"
+  - type: web
     name: chatroom-bot
     env: python
     buildCommand: |
       pip install -r requirements.txt
-      apt-get update && apt-get install -y wget
+      # Installiert notwendige Pakete wie wget und unzip
+      apt-get update && apt-get install -y wget unzip
+      # Installiert eine feste Version von Google Chrome
       wget -q https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
       apt-get install -y ./google-chrome-stable_114.0.5735.90-1_amd64.deb
+      # NEU: Lade den EXAKT PASSENDEN ChromeDriver herunter
+      wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
+      # NEU: Entpacke den ChromeDriver
+      unzip chromedriver_linux64.zip
+      # NEU: Verschiebe ihn in einen Ordner, wo das System ihn findet
+      mv chromedriver /usr/bin/chromedriver
+      # NEU: Gib ihm die Erlaubnis, ausgeführt zu werden
+      chmod +x /usr/bin/chromedriver
     startCommand: python chatbot.py
     autoDeploy: yes
