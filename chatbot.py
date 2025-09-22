@@ -7,14 +7,15 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service  # <-- WICHTIGER, NEUER IMPORT
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementNotInteractableException
 
 # === GRUNDEINSTELLUNGEN ===
-# os.environ['DISPLAY'] = ':1'  <-- DIESE ZEILE WIRD ENTFERNT
 WEBSITE_URL = "http://chatroom2000.de"
 MAX_WAIT_TIME = 25
+CHROMEDRIVER_PATH = "/usr/bin/chromedriver"  # <-- WIR DEFINIEREN DEN PFAD
 
 # === FLASK APP (UNVERÄNDERT) ===
 app = Flask(__name__)
@@ -24,12 +25,13 @@ def keep_alive(): app.run(host='0.0.0.0', port=8080)
 
 # === CHROME OPTIONS FÜR HEADLESS ===
 chrome_options = Options()
-chrome_options.add_argument("--headless") # <-- WIEDER AKTIVIERT
+chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--window-size=1280,800")
+chrome_options.add_argument("--disable-gpu") # Eine zusätzliche Option zur Stabilitätsverbesserung
 
-# (Der Rest des robusten Codes bleibt exakt gleich)
+# (Der Rest des Codes bleibt identisch, nur der Start des WebDrivers wird geändert)
 def generate_random_name():
     random_numbers = random.randint(10, 99)
     name = f"Anna 16 {random_numbers}"
@@ -101,8 +103,13 @@ def start_bot():
     print("\n" + "="*50 + f"\nStarte neuen Bot-Zyklus am {time.strftime('%Y-%m-%d %H:%M:%S')}\n" + "="*50)
     driver = None
     try:
-        print("[INFO] Versuche, den Chrome WebDriver zu starten...")
-        driver = webdriver.Chrome(options=chrome_options)
+        print("[INFO] Versuche, den Chrome WebDriver zu starten (mit explizitem Pfad)...")
+        
+        # --- DIE ENTSCHEIDENDE ÄNDERUNG ---
+        service = Service(executable_path=CHROMEDRIVER_PATH)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        # ------------------------------------
+        
         wait = WebDriverWait(driver, MAX_WAIT_TIME)
         print("[SUCCESS] WebDriver erfolgreich gestartet im Headless-Modus.")
         driver.get(WEBSITE_URL); print("[SUCCESS] Webseite geladen.")
