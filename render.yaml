@@ -1,23 +1,18 @@
 services:
   - type: web
-    name: final-chatbot-direct-upload
+    name: final-stable-bot
     env: python
     buildCommand: |
       pip install -r requirements.txt
-      apt-get update && apt-get install -y xvfb x11vnc fluxbox curl wget unzip
-      wget -q https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip -O ngrok.zip
-      unzip ngrok.zip
-      chmod +x ./ngrok
+      # Wir installieren nur noch die absolut notwendigen Programme
+      apt-get update && apt-get install -y curl wget unzip
+      # Installiert Google Chrome
       wget -q https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
       apt-get install -y ./google-chrome-stable_114.0.5735.90-1_amd64.deb
+      # Installiert den passenden ChromeDriver
       wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
       unzip chromedriver_linux64.zip
       mv chromedriver /usr/bin/chromedriver
       chmod +x /usr/bin/chromedriver
-    startCommand: |
-      ./ngrok tcp 5900 --log=stdout &
-      sleep 5
-      curl -s http://localhost:4040/api/tunnels | grep -o "tcp://[0-9.]*.tcp.ngrok.io:[0-9]*"
-      Xvfb :1 -screen 0 1280x800x16 &
-      x11vnc -display :1 -nopw -forever &
-      python chatbot.py
+    # Ein einfacher Start-Befehl, der nur noch den Bot ausführt
+    startCommand: python chatbot.py
